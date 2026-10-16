@@ -124,7 +124,7 @@ There are also some Chinese-language communities online, but I don't know about 
 
 1. {fragment (style := partKeyword) (index := 1)}[*Keyword*]: `theorem` or `lemma` (`example` has no name)
 2. {fragment (style := partName) (index := 2)}[*Name*]: to use it later, e.g. `rw [my_add_sq]`
-3. {fragment (style := partParams) (index := 3)}[*Parameters*]: what the theorem is about
+3. {fragment (style := partParams) (index := 3)}[*Parameters*]: the local context of the theorem
 4. {fragment (style := partStatement) (index := 4)}[*Statement*]: after the `:`, what is claimed
 5. {fragment (style := partProof) (index := 5)}[*Proof*]: after the `:=`
 
