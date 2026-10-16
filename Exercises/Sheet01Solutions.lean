@@ -1,4 +1,5 @@
-import Mathlib
+import Mathlib.Analysis.Real.Sqrt
+import Mathlib.Data.Nat.Prime.Defs
 
 /-!
 # Exercise sheet 1: Reading Lean statements (solutions)
