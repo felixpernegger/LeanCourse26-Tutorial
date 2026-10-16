@@ -115,34 +115,6 @@ There are also some Chinese-language communities online, but I don't know about 
 * Small things: Web (chatgpt.com) should be enough
 * Claude Code and Codex for projects are best (20€ sub suffices), Aristotle by Harmonic decent free alternative
 
-# Finding lemmas in Mathlib
-
-::::hstack
-:::vstack
-[*LeanSearch*](https://leansearch.net/)
-
-Search in natural language:
-
-“product of two nonnegative reals is nonnegative”
-
-Best when starting out.
-:::
-
-:::vstack
-[*Loogle*](https://loogle.lean-lang.org/)
-
-Search by names and patterns:
-
-`0 ≤ ?a * ?b`
-
-Often more accurate and quicker once you know the Mathlib naming conventions.
-:::
-::::
-
-:::notes
-TODO: add more tools.
-:::
-
 # Anatomy of a theorem
 
 ```lean -panel -stretch
@@ -176,14 +148,14 @@ A theorem is a definition whose type is a statement, and whose value is a proof!
 # Parameters
 
 ```lean -panel -stretch
-theorem my_mul_comm {G : Type*} [CommMagma G] (a b : G) :
+theorem my_mul_comm {G : Type*} [CommGroup G] (a b : G) :
     a * b = b * a :=
   mul_comm a b
 ```
 
 * `(a b : G)` *explicit*: you provide them, e.g. `my_mul_comm x y` proves `x * y = y * x`
 * `{G : Type*}` *implicit*: Lean figures it out (from the type of `a` and `b`)
-* `[CommMagma G]` *instance*: “`G` has a commutative multiplication”, found automatically
+* `[CommGroup G]` *instance*: “`G` has an abelian group structure”
 
 :::notes
 Hover over `mul_comm` on the previous slides: Mathlib's `mul_comm` has exactly this signature.
@@ -320,7 +292,12 @@ FLT itself is not in Mathlib yet; a large project is working on it.
 
 # To do this week
 
+:::hstack
 * Install VSCode, join GitHub
 * Install Lean and the course repository; check that `LeanCourse26/Test.lean` works
-* Do tutorial exercices
+* You can also do Lean in your browser ("Lean Web")
+* Do tutorial exercices (see QR code)
 * Play the Natural Number Game / do first assignment
+
+{image "../assets/qr/sheet01.svg" (width := "220px")}[QR code for exercise sheet 1 on GitHub]
+:::
