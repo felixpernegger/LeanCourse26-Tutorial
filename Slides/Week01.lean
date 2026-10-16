@@ -153,9 +153,9 @@ theorem my_mul_comm {G : Type*} [CommGroup G] (a b : G) :
   mul_comm a b
 ```
 
-* `(a b : G)` *explicit*: you provide them, e.g. `my_mul_comm x y` proves `x * y = y * x`
-* `{G : Type*}` *implicit*: Lean figures it out (from the type of `a` and `b`)
-* `[CommGroup G]` *instance*: “`G` has an abelian group structure”
+* `{G : Type*}` (implicit): Take *some* set (Type) “`G`
+* `(a b : G)` (explicit): Take two elements of “`G`
+* `[CommGroup G]` (instance): “`G` has an abelian group structure”
 
 :::notes
 Hover over `mul_comm` on the previous slides: Mathlib's `mul_comm` has exactly this signature.
