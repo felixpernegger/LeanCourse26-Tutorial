@@ -118,28 +118,28 @@ so use `∀`, `∃`, `→`, `∧`, `∨`, `¬` where needed. -/
 #check Odd
 #check Even
 
-def SumOfOddsIsEven : Prop := sorry
+--theorem ...
 
 /- C2. Twin prime conjecture: there are infinitely many primes `p` such that `p + 2` is prime too.
 Hint: "infinitely many" can be written like in A2. -/
 #check Nat.Prime
 
-def TwinPrimeConjecture : Prop := sorry
+-- theorem ..
 
 /- C3. Goldbach's conjecture: every even natural number greater than 2 is the sum of two primes. -/
-def Goldbach : Prop := sorry
+-- theorem ...
 
 /- C4. The function `f` is injective. -/
 def MyInjective (f : ℝ → ℝ) : Prop := sorry
 
 /- C5. The function `f` is bounded. -/
-def MyBounded (f : ℝ → ℝ) : Prop := sorry
+-- def ...
 
 /- C6. For natural numbers: if `a` divides `b` and `b` divides `c`, then `a` divides `c`.
 Note: "divides" is `∣`, typed `\mid`. It is not the `|` on your keyboard! -/
-def DvdTrans : Prop := sorry
+-- theorem ...
 
 /- C7. Lagrange: every natural number is the sum of four squares. -/
-def FourSquares : Prop := sorry
+-- theorem ---
 
 end Sheet01
