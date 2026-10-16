@@ -8,7 +8,7 @@ No proofs today: every `sorry` in parts A and B stays where it is.
 * Part A: say in words what the statement or definition means.
 * Part B: each declaration is *supposed* to say what its comment claims, but something is wrong.
   Find the problem and fix the statement.
-* Part C: formalise the statement yourself by replacing the `sorry` after `Prop :=`.
+* Part C: formalise the statement yourself
 
 Write your answers in the `/- Answer: -/` comments. Hover over names you don't know
 (or use `#check`) to see what they are.
