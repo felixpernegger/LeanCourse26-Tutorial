@@ -203,7 +203,7 @@ theorem feit_thompson /- !fragment partParams 1 -/(G : Type*) [Group G] [Finite 
 The proof is 255 pages long. It was formalized in Rocq (Gonthier et al., 2012), but it is not in Mathlib: hence `sorry`.
 :::
 
-# A definition and a classic
+# A definition and another theorem
 
 ```lean -panel -stretch
 def EpsDeltaContinuousAt (f : ℝ → ℝ) (x : ℝ) : Prop :=
