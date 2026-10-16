@@ -228,10 +228,9 @@ Mathlib's `ContinuousAt` is defined with filters instead; `Metric.continuousAt_i
 
 ```lean -panel -stretch
 example (a b : ℕ) : ℕ := a - b  -- subtraction of natural numbers
-example (a b : ℕ) : ℤ := a - b  -- subtraction of integers: ↑a - ↑b
 ```
 
-* If `a b : ℕ`, then `a - b` is a natural number. Always.
+* If `a b : ℕ`, then `a - b` is always a natural number.
 * So `-` on `ℕ` must return *some* natural number, even if `a < b`. Same for `/` on `ℕ`, and for division by `0`.
 * Such values are called *junk values*. Theorems about `a - b` on `ℕ` usually need a hypothesis like `b ≤ a`.
 
@@ -296,7 +295,7 @@ FLT itself is not in Mathlib yet; a large project is working on it.
 * Install VSCode, join GitHub
 * Install Lean and the course repository; check that `LeanCourse26/Test.lean` works
 * You can also do Lean in your browser ("Lean Web")
-* Do tutorial exercices (see QR code)
+* Do tutorial exercices https://github.com/felixpernegger/LeanCourse26-Tutorial (see QR code)
 * Play the Natural Number Game / do first assignment
 
 {image "../assets/qr/sheet01.svg" (width := "220px")}[QR code for exercise sheet 1 on GitHub]
