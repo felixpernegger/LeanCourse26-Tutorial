@@ -1,0 +1,51 @@
+/* Layered on top of the reveal.js theme chosen in Slides/Config.lean.
+   Edits here take effect on the next `./slides build`, no Lean rebuild needed. */
+
+/* The white theme uppercases headings, which mangles Lean names like `simp`. */
+.reveal h1, .reveal h2, .reveal h3 { text-transform: none; }
+.reveal h1 { font-size: 1.8em; }
+.reveal h2 { font-size: 1.4em; }
+
+/* Small, muted text for remarks: wrap content in `:::class "small"` … `:::` */
+.reveal .small { font-size: 0.7em; opacity: 0.75; }
+
+/* Denser text, e.g. for long tables: wrap in `::::class "compact"` … `::::` */
+.reveal .compact { font-size: 0.6em; }
+.reveal .compact td > p, .reveal .compact th > p { margin: 0; }
+
+/* Parts of a declaration, colored step by step. Used as fragment styles, e.g.
+   `/- !fragment partName 2 -/foo/- !end fragment -/` in code or
+   `{fragment (style := partName) (index := 2)}[Name]` in text.
+   Unlike other fragments, these are visible from the start and only get colored.
+   (Code blocks keep the camelCase class name, text gets kebab-case, so both are listed.) */
+.reveal .slides section .fragment.part-keyword,
+.reveal .slides section .fragment.partKeyword,
+.reveal .slides section .fragment.part-name,
+.reveal .slides section .fragment.partName,
+.reveal .slides section .fragment.part-params,
+.reveal .slides section .fragment.partParams,
+.reveal .slides section .fragment.part-statement,
+.reveal .slides section .fragment.partStatement,
+.reveal .slides section .fragment.part-proof,
+.reveal .slides section .fragment.partProof {
+  opacity: 1;
+  visibility: inherit;
+  border-radius: 0.2em;
+  transition: background-color 0.3s;
+}
+.reveal .slides section .fragment.part-keyword.visible,
+.reveal .slides section .fragment.partKeyword.visible { background-color: #fde68a; }
+.reveal .slides section .fragment.part-name.visible,
+.reveal .slides section .fragment.partName.visible { background-color: #bfdbfe; }
+.reveal .slides section .fragment.part-params.visible,
+.reveal .slides section .fragment.partParams.visible { background-color: #bbf7d0; }
+.reveal .slides section .fragment.part-statement.visible,
+.reveal .slides section .fragment.partStatement.visible { background-color: #fecaca; }
+.reveal .slides section .fragment.part-proof.visible,
+.reveal .slides section .fragment.partProof.visible { background-color: #e9d5ff; }
+
+/* Quiz: hide command output (e.g. `#eval` results) until its box is clicked.
+   Wrap the code block in `:::class "quiz"` … `:::`. Click handling: assets/quiz.js */
+.reveal .quiz .command-output { cursor: pointer; }
+.reveal .quiz .command-output:not(.revealed),
+.reveal .quiz .command-output:not(.revealed) * { color: transparent !important; }

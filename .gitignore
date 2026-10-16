@@ -1,0 +1,5 @@
+/.lake
+/_slides
+
+# Solutions stay private
+/Exercises/*Solutions.lean

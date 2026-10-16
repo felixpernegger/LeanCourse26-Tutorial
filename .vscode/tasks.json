@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build current slides",
+      "detail": "./slides build <week of the open Slides/WeekNN.lean>",
+      "type": "shell",
+      "command": "./slides build ${fileBasenameNoExtension}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

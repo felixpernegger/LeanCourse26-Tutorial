@@ -1,0 +1,54 @@
+# Renders all decks and publishes them to GitHub Pages.
+# Enable once: repository Settings → Pages → Source: "GitHub Actions".
+name: Publish slides
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://elan.lean-lang.org/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      # Caches the dependency builds (mostly verso); keyed on the pinned versions.
+      - uses: actions/cache@v4
+        with:
+          path: .lake
+          key: lake-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}
+
+      - name: Fetch Mathlib cache
+        run: lake exe cache get
+
+      - name: Render slides
+        run: ./slides all
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _slides
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

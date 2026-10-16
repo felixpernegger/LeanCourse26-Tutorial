@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# Helper for the weekly tutorial decks. Run `./slides help` for usage.
+set -euo pipefail
+cd "$(dirname "$0")"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./slides new N [TITLE]   create Slides/WeekNN.lean from scripts/template.lean
+  ./slides build N         check Slides/WeekNN.lean and render it to _slides/weekNN/
+  ./slides pdf N [--steps] render and export _slides/weekNN.pdf (one page per slide,
+                           or per fragment step with --steps)
+  ./slides all             render every week plus an overview page _slides/index.html
+  ./slides serve [PORT]    serve _slides/ at http://localhost:PORT (default 8000)
+EOF
+}
+
+# `3` / `03` / `Week03` -> `03`
+pad() {
+  set -- "${1#Week}"
+  [[ "${1:-}" =~ ^[0-9]+$ ]] || { echo "error: expected a week number, got '${1:-}'" >&2; exit 1; }
+  printf '%02d' "$((10#$1))"
+}
+
+# The deck title, read from the `#doc (Slides) "..." =>` line.
+title_of() {
+  sed -n 's/^#doc (Slides) "\(.*\)" =>.*/\1/p' "$1" | head -n1
+}
+
+build() {
+  local nn; nn=$(pad "$1")
+  local mod="Slides.Week$nn"
+  [[ -f "Slides/Week$nn.lean" ]] || { echo "error: Slides/Week$nn.lean does not exist (try ./slides new $((10#$nn)))" >&2; exit 1; }
+  lake build Slides.Config "$mod"
+  # Rendering runs in the interpreter: a compiled executable would have to link all of Mathlib.
+  local runner=".lake/render/Week$nn.lean"
+  mkdir -p .lake/render
+  cat > "$runner" <<EOF
+import Slides.Config
+import $mod
+def main : IO UInt32 := Slides.render "week$nn" (%doc $mod)
+EOF
+  lake env lean --run "$runner"
+}
+
+case "${1:-help}" in
+  new)
+    nn=$(pad "${2:-}")
+    file="Slides/Week$nn.lean"
+    [[ -e "$file" ]] && { echo "error: $file already exists" >&2; exit 1; }
+    title="${3:-TODO}"
+    [[ "$title" == *'"'* ]] && { echo 'error: the title must not contain "' >&2; exit 1; }
+    # Escape characters that are special in a sed replacement.
+    title_esc=$(printf '%s' "$title" | sed 's/[&|\\]/\\&/g')
+    sed -e "s|__WEEK__|$((10#$nn))|g" -e "s|__TITLE__|$title_esc|g" scripts/template.lean > "$file"
+    echo "Created $file"
+    ;;
+  build)
+    build "${2:-}"
+    ;;
+  all)
+    shopt -s nullglob
+    files=(Slides/Week[0-9]*.lean)
+    (( ${#files[@]} )) || { echo "error: no Slides/WeekNN.lean files" >&2; exit 1; }
+    for f in "${files[@]}"; do
+      n=$(basename "$f" .lean); build "${n#Week}"
+    done
+    {
+      cat <<'EOF'
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lean Course Tutorial Slides</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.6; }
+  a { color: #1a5fb4; }
+</style>
+</head>
+<body>
+<h1>Tutorial slides</h1>
+<p>For the <a href="https://github.com/fpvandoorn/LeanCourse26">Bonn Lean Course WiSe 26/27</a>.</p>
+<ul>
+EOF
+      for f in "${files[@]}"; do
+        n=$(basename "$f" .lean)
+        t=$(title_of "$f" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+        echo "  <li><a href=\"week${n#Week}/\">${t:-$n}</a></li>"
+      done
+      echo "</ul>"
+      echo "</body>"
+      echo "</html>"
+    } > _slides/index.html
+    echo "Overview written to _slides/index.html"
+    ;;
+  pdf)
+    nn=$(pad "${2:-}")
+    build "$nn"
+    command -v uv >/dev/null || { echo "error: needs uv (https://docs.astral.sh/uv/); or print http://localhost:8000/week$nn/?print-pdf from Chrome" >&2; exit 1; }
+    uv run -q --with playwright python -I scripts/pdf.py "_slides/week$nn" "_slides/week$nn.pdf" "${@:3}"
+    ;;
+  serve)
+    port="${2:-8000}"
+    echo "Serving on http://localhost:$port"
+    python3 -m http.server "$port" -d _slides
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    usage >&2; exit 1
+    ;;
+esac
