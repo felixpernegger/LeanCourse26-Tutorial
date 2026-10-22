@@ -49,3 +49,9 @@
 .reveal .quiz .command-output { cursor: pointer; }
 .reveal .quiz .command-output:not(.revealed),
 .reveal .quiz .command-output:not(.revealed) * { color: transparent !important; }
+
+/* Golfing slide: original proof on the left, narrower than the golfed versions on the right.
+   Wrap the `hstack` in `:::class "golf"` … `:::` (the class lands on the hstack itself). */
+.reveal .r-hstack.golf { align-items: flex-start; gap: 0.5em; }
+.reveal .r-hstack.golf > :first-child { flex: 0 0 38%; min-width: 0; }
+.reveal .r-hstack.golf > :last-child { flex: 1 1 0; min-width: 0; }

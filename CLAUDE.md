@@ -10,3 +10,5 @@
 - Never put `exact?`, `apply?`, `rw?`, `hint` or similar library searches in slide code: every build re-runs the
   search over all of Mathlib (minutes, ~8 GB RAM), and together with VS Code's worker this crashed the machine.
 - Don't run `./slides build` while the same file is open in VS Code and still elaborating (two Mathlib processes).
+- Commit after every moderate change (e.g. a new deck, a new exercise sheet, a reworked set of slides),
+  once it builds. No need to ask first.
