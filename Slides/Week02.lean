@@ -78,33 +78,57 @@ This is the example from Lecture 2. Before clicking: ask what the goal is after 
 Here `refine hr ?_` does the same as `apply hr`, and `refine hq ?_ ?_` the same as `apply hq`.
 :::
 
-# `?_` versus `_`
+# `apply` versus `refine`
 
-* `_`: “Lean, figure this out from the goal”, e.g. `exact add_comm _ _`
-* `?_`: “I will prove this later”: becomes a new goal
-
-```lean
-example : Continuous (fun x ↦ x + x * Real.sin x) := by
-  refine Continuous.add continuous_id ?_
--- ^ !click
-  exact Continuous.mul continuous_id Real.continuous_sin
+```lean -show
+-- The failing examples below leave hypotheses unused; don't underline them.
+set_option linter.unusedVariables false
 ```
 
-::::fragment
-```lean +error -stretch -panel
-example : Continuous (fun x ↦ x + x * Real.sin x) := by
-  refine Continuous.add continuous_id _
+`apply` adds the missing holes by itself, `refine` does not:
+
+:::hstack
+```lean -panel
+example (p q : Prop) (hp : p)
+    (hq : p → p → q) : q := by
+  apply hq
+  · exact hp
+  · exact hp
 ```
-:::class "small"
-Error: `don't know how to synthesize placeholder`: Lean can't guess proofs.
+
+```lean +error -panel -stretch
+example (p q : Prop) (hp : p)
+    (hq : p → p → q) : q := by
+  refine hq
+```
 :::
+
+:::::fragment
+Every hole must be written as `?_`, not `_`:
+
+::::hstack
+```lean +error -panel
+example (p q : Prop) (hp : p)
+    (hq : p → p → q) : q := by
+  refine hq _ _
+```
+
+```lean -panel -stretch
+example (p q : Prop) (hp : p)
+    (hq : p → p → q) : q := by
+  refine hq ?_ ?_
+  · exact hp
+  · exact hp
+```
 ::::
+:::::
 
 :::notes
-`add_comm _ _`: Lean reads off `a` and `b` from the goal.
-The last block fails: a *proof* of `Continuous (fun x ↦ x * sin x)` can't be guessed from the goal,
-so `_` gives "don't know how to synthesize placeholder". With `?_` it becomes a goal instead.
+`refine hq`: "Type mismatch: `hq` has type `p → p → q` but is expected to have type `q`".
+`refine hq _ _`: "don't know how to synthesize placeholder". `_` means "Lean, work this out yourself"
+(as in `exact add_comm _ _`), but Lean can't guess a proof of `p`. `?_` means "I prove this later".
 :::
+
 
 # Anonymous constructor `⟨…⟩`
 
