@@ -56,7 +56,7 @@
 .reveal .r-hstack.golf > :first-child { flex: 0 0 38%; min-width: 0; }
 .reveal .r-hstack.golf > :last-child { flex: 1 1 0; min-width: 0; }
 
-/* Three proofs side by side in equal columns: `:::class "three"` around an `hstack`. */
-.reveal .r-hstack.three { align-items: flex-start; gap: 0.4em; }
-.reveal .r-hstack.three > * { flex: 1 1 0; min-width: 0; }
-.reveal .r-hstack.three code.hl.lean.block { font-size: 0.46em; }
+/* Proofs side by side in equal columns, with smaller code: `:::class "cols"` around an `hstack`. */
+.reveal .r-hstack.cols { align-items: flex-start; gap: 0.4em; }
+.reveal .r-hstack.cols > * { flex: 1 1 0; min-width: 0; }
+.reveal .r-hstack.cols code.hl.lean.block { font-size: 0.46em; }

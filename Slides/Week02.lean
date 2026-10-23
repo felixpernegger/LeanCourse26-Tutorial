@@ -218,7 +218,7 @@ Lecture 3 had `exact ⟨hz₁.1, hz₁.2, hz₂.2⟩`: three pieces for `x < z�
 
 # `refine` replaces `constructor`
 
-::::class "three"
+::::class "cols"
 :::hstack
 ```lean -panel
 example (p q : Prop) (hp : p)
@@ -263,7 +263,7 @@ exactly as after `intro hp`.
 
 # `refine` replaces `use`
 
-::::class "three"
+::::class "cols"
 :::hstack
 ```lean -panel
 example : ∃ x : ℝ,
@@ -378,7 +378,7 @@ Fourth row: without `ε : ℝ`, Lean takes `ε : ℕ` and `ε / 2 > 0` becomes f
 
 `refine` needs *exactly* one `?_` for each missing argument:
 
-::::::class "three"
+::::::class "cols"
 :::::hstack
 ::::vstack
 ```lean +error -panel
@@ -582,23 +582,58 @@ the statement may still be fine.
 
 # Putting it together: ε-δ
 
-```lean
+```lean -panel -stretch
 def EpsDeltaContinuousAt (f : ℝ → ℝ) (x : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ y, |y - x| < δ → |f y - f x| < ε
+```
 
-example (x : ℝ) : EpsDeltaContinuousAt (fun x ↦ x + 1) x := by
+:::::::class "cols"
+::::::hstack
+```lean -panel -stretch
+example (x : ℝ) :
+    EpsDeltaContinuousAt (fun x ↦ x + 1) x := by
+  unfold EpsDeltaContinuousAt
+  intro ε hε
+  use ε
+  constructor
+  · exact hε
+  · intro y hy
+    have h : y + 1 - (x + 1) = y - x := by ring
+    rw [h]
+    exact hy
+```
+
+::::vstack
+:::fragment
+```lean -panel -stretch
+example (x : ℝ) :
+    EpsDeltaContinuousAt (fun x ↦ x + 1) x := by
   refine fun ε hε ↦ ⟨ε, hε, fun y hy ↦ ?_⟩
--- ^ !click
   convert hy using 2
--- ^ !click
   ring
 ```
+:::
+
+:::fragment
+```lean -panel -stretch
+example (x : ℝ) :
+    EpsDeltaContinuousAt (fun x ↦ x + 1) x :=
+  fun ε hε ↦ ⟨ε, hε, fun y hy ↦ by
+    convert hy using 2
+    ring⟩
+```
+:::
+::::
+::::::
+:::::::
 
 :::notes
 The definition from Tutorial 1. Ask first: which `δ` works? (`δ = ε`.)
-`refine` does `intro ε hε`, `use ε`, `constructor`, `exact hε`, `intro y hy` in one line.
-The goal still shows `(fun x => x + 1) y`: Lean hasn't plugged in `y` yet, `ring` doesn't mind.
-Ask what `using 1` would leave: `|(fun x => x + 1) y - …| = |y - x|` (also fine, but harder for `ring`).
+Left: only tactics from the lectures. Ask the audience to golf it before revealing the right side.
+`refine` does `intro ε hε`, `use ε`, `constructor`, `exact hε`, `intro y hy` in one line;
+`convert hy using 2` replaces the `have` + `rw` + `exact`, leaving `(fun x ↦ x + 1) y - (fun x ↦ x + 1) x = y - x`.
+`ring` doesn't mind that Lean hasn't plugged `y` into the `fun` yet.
+Last version: no holes left, so no `by` outside; `by` inside the term proves the one remaining piece.
 :::
 
 # Summary
