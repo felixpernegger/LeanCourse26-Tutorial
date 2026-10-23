@@ -105,19 +105,25 @@ example (p q r : Prop) : (p → q → r) ↔ (p ∧ q → r) := by
     · exact hq
 
 /- D2 -/
-example (P : ℝ → ℝ → Prop) : (∃ x, ∃ y, P x y) → ∃ y, ∃ x, P x y := by
-  intro h
-  obtain ⟨x, y, hxy⟩ := h
-  use y
-  use x
+example (P : ℝ → Prop) (h : ∀ x, P x) : ∃ x, P x ∧ P (x + 1) := by
+  use 0
+  constructor
+  · exact h 0
+  · exact h (0 + 1)
 
 /- D3 -/
-example (P Q : ℝ → Prop) : (∃ x, P x ∧ Q x) → (∃ x, P x) ∧ (∃ x, Q x) := by
-  intro h
-  obtain ⟨x, hp, hq⟩ := h
+example (P Q : ℝ → Prop) : (∀ x, P x ∧ Q x) ↔ (∀ x, P x) ∧ (∀ x, Q x) := by
   constructor
-  · use x
-  · use x
+  · intro h
+    constructor
+    · intro x
+      exact (h x).1
+    · intro x
+      exact (h x).2
+  · intro h x
+    constructor
+    · exact h.1 x
+    · exact h.2 x
 
 /- D4. What does `h` need as input? -/
 #check congrArg
