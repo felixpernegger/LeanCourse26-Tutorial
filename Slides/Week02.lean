@@ -117,6 +117,7 @@ example : ∃ n : ℕ, n + 2 = 5 := ⟨3, rfl⟩
 example : ∃ n : ℕ, n + 2 = 5 ∧ 2 * n = 6 := ⟨3, rfl, rfl⟩
 ```
 
+* Formally: Gives an element of an inductive type with a single constructor
 * Nesting can be flattened: `⟨3, h₁, h₂⟩` means `⟨3, ⟨h₁, h₂⟩⟩`
 * Same pattern takes things apart: `obtain ⟨n, h₁, h₂⟩ := h`
 * In tactic mode: `exact ⟨hp, hq⟩`
