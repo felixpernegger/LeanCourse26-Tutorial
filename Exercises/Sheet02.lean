@@ -88,50 +88,46 @@ example (f : ℝ → ℝ) (h : ∀ x, f (x + 1) = 0) : ∀ x, f (1 + x) = 0 := b
 
 /-! ## Part D (bonus): Mega golf
 
-Each proof below works. Golf it down to a single term after `:=`, with no `by` anywhere.
-Each one needs one small idea. -/
+The proof below works, but it is 31 lines long. Golf it down to at most 5 lines.
+(Record so far: 3 lines.) -/
 
-/- D1 -/
-example (p q r : Prop) : (p → q → r) ↔ (p ∧ q → r) := by
-  constructor
-  · intro h hpq
-    apply h
-    · exact hpq.1
-    · exact hpq.2
-  · intro h hp hq
-    apply h
-    constructor
-    · exact hp
-    · exact hq
-
-/- D2 -/
-example (P : ℝ → Prop) (h : ∀ x, P x) : ∃ x, P x ∧ P (x + 1) := by
-  use 0
-  constructor
-  · exact h 0
-  · exact h (0 + 1)
-
-/- D3 -/
-example (P Q : ℝ → Prop) : (∀ x, P x ∧ Q x) ↔ (∀ x, P x) ∧ (∀ x, Q x) := by
-  constructor
-  · intro h
-    constructor
-    · intro x
-      exact (h x).1
-    · intro x
-      exact (h x).2
-  · intro h x
-    constructor
-    · exact h.1 x
-    · exact h.2 x
-
-/- D4. What does `h` need as input? -/
 #check congrArg
 
-example (f g : ℝ → ℝ) (h : Function.Injective (g ∘ f)) : Function.Injective f := by
-  intro a b hab
-  apply h
-  unfold Function.comp
-  rw [hab]
+example (p q r : Prop) (f g : ℝ → ℝ) (hf : Monotone f) (hg : Monotone g)
+    (h : Function.Injective (g ∘ f)) :
+    ((p → q → r) ↔ (p ∧ q → r)) ∧ Monotone (g ∘ f) ∧ Function.Injective f ∧
+      (∀ a b, a ≤ b → f a + f a ≤ f b + f b) ∧ ∃ x : ℝ, 2 * x = 6 ∧ x * x = 9 := by
+  constructor
+  · constructor
+    · intro hpqr hpq
+      apply hpqr
+      · exact hpq.1
+      · exact hpq.2
+    · intro hpqr hp hq
+      apply hpqr
+      constructor
+      · exact hp
+      · exact hq
+  constructor
+  · intro a b hab
+    apply hg
+    apply hf
+    exact hab
+  constructor
+  · intro a b hab
+    apply h
+    unfold Function.comp
+    rw [hab]
+  constructor
+  · intro a b hab
+    apply add_le_add
+    · apply hf
+      exact hab
+    · apply hf
+      exact hab
+  use 3
+  constructor
+  · ring
+  · ring
 
 end Sheet02
