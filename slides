@@ -103,7 +103,16 @@ EOF
   serve)
     port="${2:-8000}"
     echo "Serving on http://localhost:$port"
-    python3 -m http.server "$port" -d _slides
+    # Like `python3 -m http.server`, but with `Cache-Control: no-cache`: otherwise the browser keeps
+    # stale copies of `-verso-docs.json` (hovers) and `custom.css` across live reloads.
+    python3 -c '
+import functools, http.server, sys
+class H(http.server.SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+http.server.ThreadingHTTPServer(("", int(sys.argv[1])), functools.partial(H, directory="_slides")).serve_forever()
+' "$port"
     ;;
   help|-h|--help)
     usage
