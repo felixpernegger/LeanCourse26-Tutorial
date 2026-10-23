@@ -15,19 +15,19 @@ namespace Sheet02
 
 /-! ## Part A: `refine` and `⟨…⟩`
 
-Don't use `constructor`, `use` or `intro` in this part: build everything with `refine`
+Don't use `constructor` or `use` in this part: build everything with `refine`
 (or `exact`) and `⟨…⟩`. -/
 
 /- A1. Which `x` works? -/
 example : ∃ x : ℝ, x * x = 4 ∧ x + 2 = 0 := by
   sorry
 
-/- A2. A single `refine` can split the `↔` and introduce the hypothesis in each direction. -/
+/- A2. Start with a single `refine`, without `intro`. -/
 example (p q : Prop) : p ∧ q ↔ q ∧ p := by
   sorry
 
 /- A3. `Function.Surjective f` means `∀ y, ∃ x, f x = y`.
-Hint: after one `refine`, only an equation should be left. Lean may show it as
+Hint: after one (`intro` and) `refine`, only an equation should be left. Lean may show it as
 `(fun x ↦ x + 1) (y - 1) = y`: that is just `y - 1 + 1 = y`, and `ring` can handle it. -/
 example : Function.Surjective (fun x : ℝ ↦ x + 1) := by
   sorry
@@ -41,24 +41,18 @@ example (a b c d : ℝ) (hab : a ≤ b) (hcd : c ≤ d) (hd : d ≤ 5) : a + c �
 
 /-! ## Part B: Golfing
 
-Each proof below works. Make it as short as you can: ideally one `exact`,
-or a term directly after `:=` (without `by`). -/
+Each proof below works. Make it as short as you can: ideally one `exact`, or a term directly
+after `:=` (no `by` at the start; a `by` inside `⟨…⟩` is fine). -/
 
-/- B1 -/
-example (p q r : Prop) (h : p ∧ q ∧ r) : r ∧ p := by
+/- B1. Bonus: can you avoid `.1` and `.2` by taking `h` apart right in the `fun`? -/
+example (p q r : Prop) : p ∧ q ∧ r → r ∧ p := by
+  intro h
   constructor
   · exact h.2.2
   · exact h.1
 
-/- B2 -/
-example : ∃ x : ℝ, ∃ y : ℝ, x + y = 3 ∧ x - y = 1 := by
-  use 2
-  use 1
-  constructor
-  · ring
-  · ring
-
-/- B3. `Monotone f` means `∀ a b, a ≤ b → f a ≤ f b`.
+/- B2. `Monotone f` means `∀ ⦃a b⦄, a ≤ b → f a ≤ f b`. The braces `⦃ ⦄` make `a` and `b`
+implicit: you don't pass them, Lean reads them off. So `hf hab : f a ≤ f b` for `hab : a ≤ b`.
 (If Lean warns about unused variables in your answer, name them `_`.) -/
 example (f g : ℝ → ℝ) (hf : Monotone f) (hg : Monotone g) : Monotone (g ∘ f) := by
   intro a b hab
@@ -66,7 +60,7 @@ example (f g : ℝ → ℝ) (hf : Monotone f) (hg : Monotone g) : Monotone (g �
   apply hf
   exact hab
 
-/- B4 -/
+/- B3 -/
 example (p q r : Prop) (hpq : p ↔ q) (hqr : q ↔ r) : p ↔ r := by
   constructor
   · intro hp
@@ -80,22 +74,19 @@ example (p q r : Prop) (hpq : p ↔ q) (hqr : q ↔ r) : p ↔ r := by
 
 /-! ## Part C: `convert` -/
 
-/- C1. Use `h`, even though it doesn't match the goal exactly. -/
-example (x : ℝ) (h : 0 < x * 2) : 0 < x + x := by
-  sorry
-
-/- C2. The right-hand side is a square in disguise. -/
+/- C1. The right-hand side is a square in disguise. -/
 #check sq_nonneg
 
 example (x : ℝ) : 0 ≤ x ^ 2 - 2 * x + 1 := by
   sorry
 
-/- C3. Try `convert h` first. Which goals are left? Can you prove them?
+/- C2. Try `convert h` first. Which goals are left? Can you prove them?
 Then find a `using n` that leaves goals you can prove. -/
 example (a b c d : ℝ) (h : a * b ≤ c + d) : b * a ≤ d + c := by
   sorry
 
-/- C4. Why does `rw [add_comm]` fail here? Use `convert` instead. -/
+/- C3. Why does `rw [add_comm]` fail here? Use `convert`, without `intro`.
+Lean may call the variable `a✝`: you can't refer to it by name, but `ring` doesn't need to. -/
 example (f : ℝ → ℝ) (h : ∀ x, f (x + 1) = 0) : ∀ x, f (1 + x) = 0 := by
   sorry
 
@@ -107,7 +98,8 @@ chooses `δ` and introduces `y`. -/
 def EpsDeltaContinuousAt (f : ℝ → ℝ) (x : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ y, |y - x| < δ → |f y - f x| < ε
 
-/- D1. A constant function: any `δ` works. -/
+/- D1. A constant function: any `δ` works. In the goal, `(fun x ↦ 7) y` is just `7`,
+and `rw [sub_self]` sees that. -/
 #check one_pos
 #check sub_self
 #check abs_zero
@@ -115,11 +107,11 @@ def EpsDeltaContinuousAt (f : ℝ → ℝ) (x : ℝ) : Prop :=
 example (x : ℝ) : EpsDeltaContinuousAt (fun _ ↦ 7) x := by
   sorry
 
-/- D2. Careful: here `convert hy using 2` leaves a goal that is false. Why?
+/- D2. Careful: here `convert hy using 2` leaves a goal you can't prove. Why?
 Use `abs_sub_comm` to turn `hy` around first. -/
 #check abs_sub_comm
 
-example (x : ℝ) : EpsDeltaContinuousAt (fun x ↦ 5 - x) x := by
+example (x : ℝ) : EpsDeltaContinuousAt (fun t ↦ 5 - t) x := by
   sorry
 
 end Sheet02
