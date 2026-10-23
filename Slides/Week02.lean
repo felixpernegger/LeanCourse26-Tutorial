@@ -679,6 +679,7 @@ Last version: no holes left, so no `by` outside; `by` inside the term proves the
 # To do this week
 
 :::hstack
+* https://github.com/felixpernegger/LeanCourse26-Tutorial
 * Do tutorial exercises: [Exercises/Sheet02.lean](https://github.com/felixpernegger/LeanCourse26-Tutorial/blob/main/Exercises/Sheet02.lean) (see QR code)
 * Assignment 2: upload on eCampus by 28.10, before class (contains material from Lecture 4)
 * Try to golf your own proofs once they work
