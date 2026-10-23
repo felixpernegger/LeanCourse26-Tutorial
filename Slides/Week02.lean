@@ -28,10 +28,37 @@ Lectures so far: `rfl`, `ring`, `rw`, `calc`, `intro`, `exact`, `have`, `special
 `constructor`, `obtain`, `use`. `refine` was used once in Lecture 2 without explanation.
 :::
 
+# Recap: `exact`, `apply`, `use`, `constructor`
+
+```lean
+example (p q : Prop) (hp : p) (hpq : p → q) : q := by
+  exact hpq hp      -- closes the goal
+
+example (p q : Prop) (hp : p) (hpq : p → q) : q := by
+  apply hpq         -- new goal: p
+-- ^ !click
+  exact hp
+
+example : ∃ x : ℝ, 2 * x = 1 := by
+  use 1 / 2         -- x := 1 / 2
+-- ^ !click
+  norm_num
+
+example (p q : Prop) (hp : p) (hq : q) : p ∧ q := by
+  constructor       -- goals: p and q
+-- ^ !click
+  · exact hp
+  · exact hq
+```
+
+:::notes
+All from Lectures 2 and 3. `constructor` also splits `↔`. Click through the goals quickly; ask what each tactic leaves.
+`use` also closes goals that hold by `rfl` (e.g. `∃ n, n + 1 = 4` after `use 3`), here it doesn't.
+Today: one tactic, `refine`, that can do all four.
+:::
+
 # `refine` = `exact` with holes
 
-* `exact t`: `t` proves the goal completely
-* `apply t`: the premises of `t` become new goals
 * `refine t`: like `exact`, but each hole `?_` in `t` becomes a new goal
 
 ```lean
