@@ -88,8 +88,7 @@ example (f : ℝ → ℝ) (h : ∀ x, f (x + 1) = 0) : ∀ x, f (1 + x) = 0 := b
 
 /-! ## Part D (bonus): Mega golf
 
-The proof below works, but it is 31 lines long. Golf it down to at most 5 lines.
-(Record so far: 3 lines.) -/
+The proof below works, but it is 31 lines long. Golf it down to at most 5 lines. -/
 
 #check congrArg
 
