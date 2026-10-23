@@ -154,23 +154,31 @@ Lecture 3 had `exact ⟨hz₁.1, hz₁.2, hz₂.2⟩`: three pieces for `x < z�
 
 # `refine` replaces `constructor`
 
+::::class "three"
 :::hstack
 ```lean -panel
-example (p q : Prop) (hp : p) (hq : q) :
-    p ∧ q := by
+example (p q : Prop) (hp : p)
+    (hq : q) : p ∧ q := by
   constructor
   · exact hp
   · exact hq
 ```
 
-```lean -panel -stretch
-example (p q : Prop) (hp : p) (hq : q) :
-    p ∧ q := by
+```lean -panel
+example (p q : Prop) (hp : p)
+    (hq : q) : p ∧ q := by
   refine ⟨?_, ?_⟩
   · exact hp
   · exact hq
 ```
+
+```lean -panel -stretch
+example (p q : Prop) (hp : p)
+    (hq : q) : p ∧ q := by
+  refine ⟨hp, hq⟩
+```
 :::
+::::
 
 :::fragment
 `refine` can do more in one step, e.g. `constructor` and `intro` on both sides of an `↔`:
@@ -184,12 +192,15 @@ example (p q : Prop) (hpq : p → q) (hqp : q → p) : p ↔ q := by
 :::
 
 :::notes
+Third version: instead of leaving holes and filling them later, put `hp` and `hq` in directly
+(then `exact ⟨hp, hq⟩` does the same).
 `fun hp ↦ ?_` is a function whose body is still a hole: the new goal has `hp` in its context,
 exactly as after `intro hp`.
 :::
 
 # `refine` replaces `use`
 
+::::class "three"
 :::hstack
 ```lean -panel
 example : ∃ x : ℝ,
@@ -200,28 +211,26 @@ example : ∃ x : ℝ,
   · ring
 ```
 
-```lean -panel -stretch
+```lean -panel
 example : ∃ x : ℝ,
     2 * x = 6 ∧ x * x = 9 := by
   refine ⟨3, ?_, ?_⟩
   · ring
   · ring
 ```
-:::
-
-:::fragment
-No holes left to fill later:
 
 ```lean -panel -stretch
-example : ∃ x : ℝ, 2 * x = 6 ∧ x * x = 9 := by
+example : ∃ x : ℝ,
+    2 * x = 6 ∧ x * x = 9 := by
   refine ⟨3, by ring, by ring⟩
 ```
 :::
+::::
 
 :::notes
 Difference: `use` tries to close easy goals by itself afterwards (e.g. `rfl`), `refine` never does.
-`by ring` inside a term: proves that piece with a tactic.
-In the last version, `exact` would work just as well: there are no holes.
+Third version: no holes left, every piece is filled in directly. `by ring` inside a term proves that
+piece with a tactic. Here `exact` would work just as well: there are no holes.
 :::
 
 # `refine` can do (almost) everything
@@ -302,43 +311,62 @@ Fourth row: without `ε : ℝ`, Lean takes `ε : ℕ` and `ε / 2 > 0` becomes f
 (junk values from last week!).
 :::
 
-# Pitfalls
+# Pitfalls: count the holes
 
-```lean -show
--- The failing examples below leave hypotheses unused; don't underline them.
-set_option linter.unusedVariables false
-```
+`refine` needs *exactly* one `?_` for each missing argument:
 
-`refine` needs *exactly* the right number of holes:
-
-```lean +error -panel -stretch
-example (p q r s : Prop) (hq : p → s → q) (hr : q → r) : r := by
-  refine hr (hq ?_)
+::::::class "three"
+:::::hstack
+::::vstack
+```lean +error -panel
+example (p q s : Prop)
+    (hp : p) (hs : s)
+    (hq : p → s → q) : q := by
+  refine hq ?_
 ```
 :::class "small"
-Error: `hq ?_` still has type `s → q`, but `hr` needs a `q`.
+✗ Too few: `hq ?_` is still `s → q`
 :::
-
-::::fragment
-`⟨…⟩` needs to know what it builds:
-
-```lean +error -panel -stretch
-example (p q : Prop) (hp : p) (hq : q) : p ∧ q := by
-  have h := ⟨hp, hq⟩
-  exact h
-```
-
-:::class "small"
-Error: `The expected type of this term could not be determined`.
-:::
-
-Fix: `have h : p ∧ q := ⟨hp, hq⟩`
 ::::
 
+::::vstack
+```lean +error -panel
+example (p q s : Prop)
+    (hp : p) (hs : s)
+    (hq : p → s → q) : q := by
+  refine hq ?_ ?_ ?_
+```
+:::class "small"
+✗ Too many: `hq ?_ ?_` is not a function
+:::
+::::
+
+::::vstack
+```lean -panel -stretch
+example (p q s : Prop)
+    (hp : p) (hs : s)
+    (hq : p → s → q) : q := by
+  refine hq ?_ ?_
+  · exact hp
+  · exact hs
+```
+:::class "small"
+✓ Two arguments, two holes
+:::
+::::
+:::::
+::::::
+
+:::fragment
+Same with `⟨…⟩`: `refine ⟨?_, ?_, ?_⟩` for `p ∧ q` is an error. Count the pieces!
+:::
+
 :::notes
-First error: `hq ?_` still has type `s → q`, not `q`. `apply` would have added the missing hole.
-Second error: "The expected type of this term could not be determined". `⟨hp, hq⟩` could also be
-an `∃`, a pair `p × q`, …; Lean doesn't guess.
+Ask before revealing the captions: what goes wrong in the first two?
+Too few: "Type mismatch: `hq ?_` has type `s → q` but is expected to have type `q`". `apply hq` would add the hole.
+Too many: "Function expected": `hq ?_ ?_` is already a proof of `q`, it takes no more arguments.
+`⟨…⟩` is forgiving the other way: `refine ⟨?_, ?_⟩` for `p ∧ q ∧ r` works and leaves `p` and `q ∧ r`.
+Another pitfall: `have h := ⟨hp, hq⟩` fails ("expected type could not be determined"), write `have h : p ∧ q := ⟨hp, hq⟩`.
 :::
 
 # Golfing
