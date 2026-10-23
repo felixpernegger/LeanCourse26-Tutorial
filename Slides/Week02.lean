@@ -57,7 +57,7 @@ All from Lectures 2 and 3. `constructor` also splits `↔`. Click through the go
 Today: one tactic, `refine`, that can do all four.
 :::
 
-# `refine` = `exact` with holes
+# `refine` = `exact/apply` with holes
 
 * `refine t`: like `exact`, but each hole `?_` in `t` becomes a new goal
 
@@ -130,6 +130,40 @@ example (p q : Prop) (hp : p)
 :::
 
 
+# Why `refine` is more flexible
+
+```lean
+-- le_trans : a ≤ b → b ≤ c → a ≤ c
+example (a b c : ℝ) (hab : a ≤ b) (hbc : b ≤ c) :
+    a ≤ c := by
+  apply le_trans    -- which b? Three goals
+-- ^ !click
+  · exact hab
+  · exact hbc
+-- !fragment
+
+example (a b c : ℝ) (hab : a ≤ b) (hbc : b ≤ c) :
+    a ≤ c := by
+  refine le_trans hab ?_
+-- ^ !click
+  exact hbc
+-- !fragment
+
+example (p q r s : Prop) (hp : p) (hs : s)
+    (hq : p → s → q) (hr : q → r) : r := by
+  refine hr (hq hp ?_)    -- three steps in one
+-- ^ !click
+  exact hs
+```
+
+:::notes
+`refine` lets you fill in what you already know, and put holes anywhere.
+`apply le_trans` can't know the middle term: goals `a ≤ ?b`, `?b ≤ c` and `ℝ` (the `?b` itself).
+It works out after `exact hab`, but the goals are confusing. `refine le_trans hab ?_` fixes `b` right away.
+Last example: a hole deep inside the term, one line instead of `apply hr`, `apply hq`, `exact hp`.
+Coming next: holes inside `⟨…⟩` and `fun`, which `apply` can't do at all.
+:::
+
 # Anonymous constructor `⟨…⟩`
 
 Builds anything that is made of several pieces (`∧`, `↔`, `∃`, …):
@@ -181,8 +215,7 @@ example (p q : Prop) (hp : p)
 ::::
 
 :::fragment
-`refine` can do more in one step, e.g. `constructor` and `intro` on both sides of an `↔`:
-
+`refine` can do more in one step:
 ```lean -panel -stretch
 example (p q : Prop) (hpq : p → q) (hqp : q → p) : p ↔ q := by
   refine ⟨fun hp ↦ ?_, fun hq ↦ ?_⟩
@@ -376,10 +409,7 @@ Another pitfall: `have h := ⟨hp, hq⟩` fails ("expected type could not be det
 
 * Shorter proofs are often faster to check, Mathlib prefers concise proofs
 * But: shorter is not always more readable, and harder to fix when something changes
-
-:::fragment
-Golf only *after* the proof works. In the assignments, readability beats length!
-:::
+* Golf *after* proof is done, keep it readable
 
 :::notes
 The name comes from "code golf" in programming.
@@ -465,6 +495,34 @@ example (x : ℝ) (h : 2 * x ≤ 3) : x + x ≤ 3 := by
 
 :::notes
 Here `x + x ≤ 3` and `2 * x ≤ 3` agree on the right, so the only goal left is `x + x = 2 * x`.
+:::
+
+# `convert`: two more examples
+
+```lean
+-- sq_nonneg a : 0 ≤ a ^ 2
+example (x y : ℝ) : 0 ≤ (x - y) * (x - y) := by
+  convert sq_nonneg (x - y)
+-- ^ !click
+  ring
+-- !fragment
+
+example (f : ℝ → ℝ) (h : Continuous (fun x ↦ f (x * 2))) :
+    Continuous (fun x ↦ f (2 * x)) := by
+  convert h using 3
+-- ^ !click
+  ring
+```
+
+:::fragment
+`rw [mul_comm]` fails on the second one: `rw` can't rewrite inside `fun x ↦ …`, `convert` can.
+:::
+
+:::notes
+First: `convert` with a lemma instead of a hypothesis. The only difference is `(x - y) * (x - y)`
+versus `(x - y) ^ 2`, so that equation is left. Ask: what goal do you expect?
+Second: `x✝` is the variable of the `fun`: `convert` went inside it.
+`using 1` leaves `(fun x ↦ f (2 * x)) = fun x ↦ f (x * 2)`, `using 4` goes too deep (`2 = x` and `x = 2`).
 :::
 
 # `convert` can go too deep
