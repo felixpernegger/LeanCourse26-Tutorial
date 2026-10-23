@@ -39,10 +39,10 @@ example (p q : Prop) (hp : p) (hpq : p → q) : q := by
 -- ^ !click
   exact hp
 
-example : ∃ x : ℝ, 2 * x = 1 := by
-  use 1 / 2         -- x := 1 / 2
+example : ∃ x : ℝ, 2 * x = x + 3 := by
+  use 3             -- x := 3
 -- ^ !click
-  norm_num
+  ring
 
 example (p q : Prop) (hp : p) (hq : q) : p ∧ q := by
   constructor       -- goals: p and q
@@ -113,8 +113,8 @@ Builds anything that is made of several pieces (`∧`, `↔`, `∃`, …):
 ```lean -panel -stretch
 example (p q : Prop) (hp : p) (hq : q) : p ∧ q := ⟨hp, hq⟩
 example (p q : Prop) (hpq : p → q) (hqp : q → p) : p ↔ q := ⟨hpq, hqp⟩
-example : ∃ n : ℕ, 2 < n := ⟨3, by norm_num⟩
-example : ∃ n : ℕ, 2 < n ∧ n < 5 := ⟨3, by norm_num, by norm_num⟩
+example : ∃ n : ℕ, n + 2 = 5 := ⟨3, rfl⟩
+example : ∃ n : ℕ, n + 2 = 5 ∧ 2 * n = 6 := ⟨3, rfl, rfl⟩
 ```
 
 * Nesting can be flattened: `⟨3, h₁, h₂⟩` means `⟨3, ⟨h₁, h₂⟩⟩`
@@ -122,8 +122,8 @@ example : ∃ n : ℕ, 2 < n ∧ n < 5 := ⟨3, by norm_num, by norm_num⟩
 * In tactic mode: `exact ⟨hp, hq⟩`
 
 :::notes
-`by norm_num` inside a term: proves that piece with a tactic.
-`∃ n, 2 < n ∧ n < 5` is `∃ n, (2 < n ∧ n < 5)`: a pair of `3` and a pair of proofs, hence the nesting.
+`rfl` is a term too: it proves `3 + 2 = 5` by computation.
+`∃ n, n + 2 = 5 ∧ 2 * n = 6` is `∃ n, (n + 2 = 5 ∧ 2 * n = 6)`: a pair of `3` and a pair of proofs, hence the nesting.
 Lecture 3 had `exact ⟨hz₁.1, hz₁.2, hz₂.2⟩`: three pieces for `x < z₁ ∧ z₁ < z₂ ∧ z₂ < y`.
 :::
 
@@ -167,18 +167,20 @@ exactly as after `intro hp`.
 
 :::hstack
 ```lean -panel
-example : ∃ n : ℕ, 2 < n ∧ n < 5 := by
+example : ∃ x : ℝ,
+    2 * x = 6 ∧ x * x = 9 := by
   use 3
   constructor
-  · norm_num
-  · norm_num
+  · ring
+  · ring
 ```
 
 ```lean -panel -stretch
-example : ∃ n : ℕ, 2 < n ∧ n < 5 := by
+example : ∃ x : ℝ,
+    2 * x = 6 ∧ x * x = 9 := by
   refine ⟨3, ?_, ?_⟩
-  · norm_num
-  · norm_num
+  · ring
+  · ring
 ```
 :::
 
@@ -186,13 +188,14 @@ example : ∃ n : ℕ, 2 < n ∧ n < 5 := by
 No holes left to fill later:
 
 ```lean -panel -stretch
-example : ∃ n : ℕ, 2 < n ∧ n < 5 := by
-  refine ⟨3, by norm_num, by norm_num⟩
+example : ∃ x : ℝ, 2 * x = 6 ∧ x * x = 9 := by
+  refine ⟨3, by ring, by ring⟩
 ```
 :::
 
 :::notes
 Difference: `use` tries to close easy goals by itself afterwards (e.g. `rfl`), `refine` never does.
+`by ring` inside a term: proves that piece with a tactic.
 In the last version, `exact` would work just as well: there are no holes.
 :::
 
