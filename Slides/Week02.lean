@@ -89,9 +89,8 @@ example : Continuous (fun x ↦ x + x * Real.sin x) := by
   exact Real.continuous_sin
 -- !fragment
 
-example (f g : ℝ → ℝ) (hf : Function.Injective f)
-    (hg : Function.Injective g) :
-    Function.Injective (g ∘ f) := by
+example (f g : ℝ → ℝ) (hg : Function.Injective g)
+    (hf : Function.Injective f) : Function.Injective (g ∘ f) := by
   intro x y hgf
   refine hf ?_      -- suffices: f x = f y
 -- ^ !click
@@ -160,40 +159,6 @@ example (p q : Prop) (hp : p)
 :::
 
 
-# Why `refine` is more flexible
-
-```lean
--- le_trans : a ≤ b → b ≤ c → a ≤ c
-example (a b c : ℝ) (hab : a ≤ b) (hbc : b ≤ c) :
-    a ≤ c := by
-  apply le_trans    -- which b? Three goals
--- ^ !click
-  · exact hab
-  · exact hbc
--- !fragment
-
-example (a b c : ℝ) (hab : a ≤ b) (hbc : b ≤ c) :
-    a ≤ c := by
-  refine le_trans hab ?_
--- ^ !click
-  exact hbc
--- !fragment
-
-example (p q r s : Prop) (hp : p) (hs : s)
-    (hq : p → s → q) (hr : q → r) : r := by
-  refine hr (hq hp ?_)    -- three steps in one
--- ^ !click
-  exact hs
-```
-
-:::notes
-`refine` lets you fill in what you already know, and put holes anywhere.
-`apply le_trans` can't know the middle term: goals `a ≤ ?b`, `?b ≤ c` and `ℝ` (the `?b` itself).
-It works out after `exact hab`, but the goals are confusing. `refine le_trans hab ?_` fixes `b` right away.
-Last example: a hole deep inside the term, one line instead of `apply hr`, `apply hq`, `exact hp`.
-Coming next: holes inside `⟨…⟩` and `fun`, which `apply` can't do at all.
-:::
-
 # Anonymous constructor `⟨…⟩`
 
 Builds anything that is made of several pieces (`∧`, `↔`, `∃`, …):
@@ -207,8 +172,7 @@ example : ∃ n : ℕ, n + 2 = 5 ∧ 2 * n = 6 := ⟨3, rfl, rfl⟩
 
 * Formally: Gives an element of an inductive type with a single constructor
 * Nesting can be flattened: `⟨3, h₁, h₂⟩` means `⟨3, ⟨h₁, h₂⟩⟩`
-* Same pattern takes things apart: `obtain ⟨n, h₁, h₂⟩ := h`
-* In tactic mode: `exact ⟨hp, hq⟩`
+* In tactic mode: `exact ⟨hp, hq⟩` etc.
 
 :::notes
 `rfl` is a term too: it proves `3 + 2 = 5` by computation.
@@ -218,7 +182,7 @@ Lecture 3 had `exact ⟨hz₁.1, hz₁.2, hz₂.2⟩`: three pieces for `x < z�
 
 # `refine` replaces `constructor`
 
-::::class "cols"
+::::class "three"
 :::hstack
 ```lean -panel
 example (p q : Prop) (hp : p)
@@ -263,7 +227,7 @@ exactly as after `intro hp`.
 
 # `refine` replaces `use`
 
-::::class "cols"
+::::class "three"
 :::hstack
 ```lean -panel
 example : ∃ x : ℝ,
@@ -294,6 +258,55 @@ example : ∃ x : ℝ,
 Difference: `use` tries to close easy goals by itself afterwards (e.g. `rfl`), `refine` never does.
 Third version: no holes left, every piece is filled in directly. `by ring` inside a term proves that
 piece with a tactic. Here `exact` would work just as well: there are no holes.
+:::
+
+# Why `refine` is more flexible
+
+`apply` works out its term *before* looking at the goal, so `⟨…⟩` doesn't know what to build:
+
+::::class "cols"
+:::hstack
+```lean +error -panel
+example (p q : Prop) (hp : p) (hq : q) :
+    p ∧ q := by
+  apply ⟨hp, ?_⟩
+```
+
+```lean -panel -stretch
+example (p q : Prop) (hp : p) (hq : q) :
+    p ∧ q := by
+  refine ⟨hp, ?_⟩
+  exact hq
+```
+:::
+::::
+
+:::::fragment
+`refine` can put holes anywhere, even inside `⟨…⟩` and `fun`:
+
+::::class "cols"
+:::hstack
+```lean +error -panel
+example : ∃ x : ℝ, ∀ y : ℝ, x * y = 0 := by
+  apply ⟨0, fun y ↦ ?_⟩
+```
+
+```lean -panel -stretch
+example : ∃ x : ℝ, ∀ y : ℝ, x * y = 0 := by
+  refine ⟨0, fun y ↦ ?_⟩
+  ring
+```
+:::
+::::
+:::::
+
+:::notes
+Both errors: "Invalid `⟨...⟩` notation: The expected type of this term could not be determined".
+`apply e` elaborates `e` on its own and only then matches its type against the goal;
+`refine e` elaborates `e` against the goal, so `⟨…⟩` and `fun` know what they build.
+With `apply` you'd need `constructor`/`use`/`intro` first, i.e. several steps.
+Even where `apply` works, it can be clumsy: `apply le_trans` leaves goals with an unknown
+middle term `?b`, while `refine le_trans hab ?_` fixes it right away.
 :::
 
 # `refine` can do (almost) everything
@@ -378,7 +391,7 @@ Fourth row: without `ε : ℝ`, Lean takes `ε : ℕ` and `ε / 2 > 0` becomes f
 
 `refine` needs *exactly* one `?_` for each missing argument:
 
-::::::class "cols"
+::::::class "three"
 :::::hstack
 ::::vstack
 ```lean +error -panel
@@ -506,9 +519,10 @@ In the third version there are no holes left, so `exact` works too.
 Last version: no `by` at all (term mode), and `fun ⟨hp, hq⟩ ↦` takes the pair apart like `obtain`.
 :::
 
-# `convert`: almost the right statement
+# The `convert` tactic
 
-`convert h`: use `h` even though it does not match the goal exactly.
+`convert h`: use `h` even though it does not match the goal exactly:
+
 Every difference between `h` and the goal becomes an equation to prove.
 
 ```lean
@@ -582,58 +596,23 @@ the statement may still be fine.
 
 # Putting it together: ε-δ
 
-```lean -panel -stretch
+```lean
 def EpsDeltaContinuousAt (f : ℝ → ℝ) (x : ℝ) : Prop :=
   ∀ ε > 0, ∃ δ > 0, ∀ y, |y - x| < δ → |f y - f x| < ε
-```
 
-:::::::class "cols"
-::::::hstack
-```lean -panel -stretch
-example (x : ℝ) :
-    EpsDeltaContinuousAt (fun x ↦ x + 1) x := by
-  unfold EpsDeltaContinuousAt
-  intro ε hε
-  use ε
-  constructor
-  · exact hε
-  · intro y hy
-    have h : y + 1 - (x + 1) = y - x := by ring
-    rw [h]
-    exact hy
-```
-
-::::vstack
-:::fragment
-```lean -panel -stretch
-example (x : ℝ) :
-    EpsDeltaContinuousAt (fun x ↦ x + 1) x := by
+example (x : ℝ) : EpsDeltaContinuousAt (fun x ↦ x + 1) x := by
   refine fun ε hε ↦ ⟨ε, hε, fun y hy ↦ ?_⟩
+-- ^ !click
   convert hy using 2
+-- ^ !click
   ring
 ```
-:::
-
-:::fragment
-```lean -panel -stretch
-example (x : ℝ) :
-    EpsDeltaContinuousAt (fun x ↦ x + 1) x :=
-  fun ε hε ↦ ⟨ε, hε, fun y hy ↦ by
-    convert hy using 2
-    ring⟩
-```
-:::
-::::
-::::::
-:::::::
 
 :::notes
 The definition from Tutorial 1. Ask first: which `δ` works? (`δ = ε`.)
-Left: only tactics from the lectures. Ask the audience to golf it before revealing the right side.
-`refine` does `intro ε hε`, `use ε`, `constructor`, `exact hε`, `intro y hy` in one line;
-`convert hy using 2` replaces the `have` + `rw` + `exact`, leaving `(fun x ↦ x + 1) y - (fun x ↦ x + 1) x = y - x`.
-`ring` doesn't mind that Lean hasn't plugged `y` into the `fun` yet.
-Last version: no holes left, so no `by` outside; `by` inside the term proves the one remaining piece.
+`refine` does `intro ε hε`, `use ε`, `constructor`, `exact hε`, `intro y hy` in one line.
+The goal still shows `(fun x => x + 1) y`: Lean hasn't plugged in `y` yet, `ring` doesn't mind.
+Ask what `using 1` would leave: `|(fun x => x + 1) y - …| = |y - x|` (also fine, but harder for `ring`).
 :::
 
 # Summary
