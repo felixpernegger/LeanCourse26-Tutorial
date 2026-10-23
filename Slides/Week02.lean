@@ -78,6 +78,36 @@ This is the example from Lecture 2. Before clicking: ask what the goal is after 
 Here `refine hr ?_` does the same as `apply hr`, and `refine hq ?_ ?_` the same as `apply hq`.
 :::
 
+# `refine` in action: Lecture 3 revisited
+
+```lean
+example : Continuous (fun x ↦ x + x * Real.sin x) := by
+  refine Continuous.add continuous_id ?_
+-- ^ !click
+  refine Continuous.mul continuous_id ?_
+-- ^ !click
+  exact Real.continuous_sin
+-- !fragment
+
+example (f g : ℝ → ℝ) (hf : Function.Injective f)
+    (hg : Function.Injective g) :
+    Function.Injective (g ∘ f) := by
+  intro x y hgf
+  refine hf ?_      -- suffices: f x = f y
+-- ^ !click
+  refine hg ?_      -- suffices: g (f x) = g (f y)
+-- ^ !click
+  exact hgf
+```
+
+:::notes
+Both are from Lecture 3, where they were done with `apply` and bullets.
+Continuity: `continuous_id` fills the first argument right away, only the hard part stays a hole.
+Ask: what is `Continuous.add`'s first argument here? (`Continuous (fun x ↦ x)`.)
+Injectivity: `intro x y hgf` works without `unfold Injective`. Each `refine` reads as "it suffices to show".
+`hgf : (g ∘ f) x = (g ∘ f) y` is by definition `g (f x) = g (f y)`, so `exact hgf` works.
+:::
+
 # `apply` versus `refine`
 
 ```lean -show
