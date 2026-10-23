@@ -1,3 +1,6 @@
 /.lake
 /_slides
 
+
+# Solutions stay private until after the tutorial
+/Exercises/Sheet02Solutions.lean
